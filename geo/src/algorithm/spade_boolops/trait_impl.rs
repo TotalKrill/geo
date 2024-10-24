@@ -12,12 +12,12 @@ where
     T: SpadeTriangulationFloat,
 {
     fn boolop<F: Fn(&Triangle<T>) -> bool>(
-        p1: &Self,
+        &self,
         p2: &Self,
         _op_type: OpType,
         op_pred: F,
     ) -> SpadeBoolopsResult<T> {
-        vec![p1.clone(), p2.clone()]
+        vec![self.clone(), p2.clone()]
             .constrained_outer_triangulation(Default::default())
             .map_err(SpadeBoolopsError::TriangulationError)?
             .into_iter()
@@ -33,7 +33,7 @@ where
     T: SpadeTriangulationFloat,
 {
     fn boolop<F: Fn(&Triangle<T>) -> bool>(
-        p1: &Self,
+        &self,
         p2: &Self,
         op_type: OpType,
         op_pred: F,
@@ -58,7 +58,7 @@ where
             polys_with(mp1, move |p| mp2.iter().any(|o| p.intersects(o)))
         };
 
-        let p1_inter = intersecting_polys(p1, &p2.0);
+        let p1_inter = intersecting_polys(self, &p2.0);
         // we know p2 can only intersect polys in p1_inter
         let p2_inter = intersecting_polys(p2, &p1_inter);
 
@@ -80,10 +80,10 @@ where
         // - if we union , then we want to include non intersecting polys of the second argument
         //   multi polygon in the result
         let p1_non_inter = matches!(op_type, OpType::Union | OpType::Difference)
-            .then(|| non_intersecting_polys(p1, p2))
+            .then(|| non_intersecting_polys(self, p2))
             .unwrap_or_default();
         let p2_non_inter = matches!(op_type, OpType::Union)
-            .then(|| non_intersecting_polys(p2, p1))
+            .then(|| non_intersecting_polys(p2, self))
             .unwrap_or_default();
 
         // do a constrained triangulation and then stitch the triangles together
